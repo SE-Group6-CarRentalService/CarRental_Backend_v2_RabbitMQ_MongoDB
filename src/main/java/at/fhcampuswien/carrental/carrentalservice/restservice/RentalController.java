@@ -4,7 +4,10 @@ import at.fhcampuswien.carrental.carrentalservice.entity.RentalAttribute;
 import at.fhcampuswien.carrental.carrentalservice.repository.RentalRepository;
 import at.fhcampuswien.carrental.carrentalservice.services.CurrencyConverter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,19 +28,18 @@ public class RentalController {
 }
 
     @PostMapping("v1/rentals")
-    String createRental(@RequestBody RentalAttribute newRental) {
+    ResponseEntity<Void> createRental(@RequestBody RentalAttribute newRental) {
 
         if(!repo.findByCarId(newRental.getCarId()).isEmpty()) {
             RentalAttribute newRentalID = new RentalAttribute();
             newRental.setId(newRentalID.getId());
             repo.save(newRental);
 
-            return "Rental was created";
+            return new ResponseEntity<>(HttpStatus.CREATED);
         }
+
         else{
-
-            return "Car is already rented";
-
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Car is already rented");
         }
 
     }
@@ -54,9 +56,9 @@ public class RentalController {
     }
 
     @DeleteMapping("v1/rentals/{id}")
-    String deleteRental(@PathVariable int RentalId) {
+    ResponseEntity<Void> deleteRental(@PathVariable int RentalId) {
         repo.deleteById(RentalId);
-        return "Rental was deleted";
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     private List<RentalAttribute> convertCurrency(String currency, Iterable<RentalAttribute> rentalAttributes){

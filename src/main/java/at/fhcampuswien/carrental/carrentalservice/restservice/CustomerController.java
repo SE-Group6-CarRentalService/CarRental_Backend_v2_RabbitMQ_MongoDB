@@ -3,12 +3,16 @@ package at.fhcampuswien.carrental.carrentalservice.restservice;
 
 import at.fhcampuswien.carrental.carrentalservice.entity.CustomerAttribute;
 import at.fhcampuswien.carrental.carrentalservice.repository.CustomerRepository;
+import at.fhcampuswien.carrental.carrentalservice.security.JwtTokenUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 
 @RestController
@@ -20,56 +24,64 @@ public class CustomerController {
     static List<Session> Sessions = new ArrayList<>();
     static int lastSessionId =0;
 
+    @Autowired
+    private JwtTokenUtil jwtTokenUtil;
+
+    private BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
 
     @GetMapping("v1/Customers")
     List<CustomerAttribute> getCustomers() {
         return (List<CustomerAttribute>) repo.findAll();
     }
 
-    @GetMapping("v1/Customers/login")
-    Session getCustomer(@RequestParam String email, @RequestParam String passwordHash) {
+    @PostMapping("v1/Customers/login")
+    ResponseEntity<String> getCustomer(@RequestParam String email, @RequestParam String password) {
+        CustomerAttribute customer;
+        try {
+            customer = repo.findByEmail(email).get(0);
+        }catch (Exception e){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No user with this email found");
+        }
 
-        CustomerAttribute Customer = repo.findByEmail(email).get(0);
-
-        if(Objects.equals(Customer.getPassword(), passwordHash)) {
-
-            Session newSession = new Session(lastSessionId, email);
-            Sessions.add(newSession);
-            lastSessionId++;
-
-            return newSession;
-
+        if(passwordEncoder.matches(password, customer.getPassword())) {
+            final String token = jwtTokenUtil.generateToken(email);
+            System.out.println(token);
+            return new ResponseEntity<>(token, HttpStatus.OK);
         }
         else{
-            return null;
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
     }
 
-    @GetMapping("v1/Customers/logout")
-    String deleteSession(@RequestBody Integer session) {
+    @PostMapping("v1/Customers/logout")
+    ResponseEntity<Void> deleteSession(@RequestBody Session session) {
+        System.out.println("Session Logout " + session);
+        System.out.println("Sessions " + Sessions);
         if (Sessions.contains(session))
         {
             Sessions.remove(session);
-            return "User has been logged out";
+            return new ResponseEntity<>(HttpStatus.OK);
         }
         else
         {
-            return "no session under that id";
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "no session under that id");
         }
     }
 
     @PostMapping("v1/Customers/register")
-    String registerCustomer(@RequestBody CustomerAttribute newCustomer) {
+    ResponseEntity<Void> registerCustomer(@RequestBody CustomerAttribute newCustomer) {
         if(repo.findByEmail(newCustomer.getEmail()).isEmpty()) {
             CustomerAttribute newCustomerID = new CustomerAttribute();
             newCustomer.setId(newCustomerID.getId());
+            newCustomer.setPassword(passwordEncoder.encode(newCustomer.getPassword()));
             repo.save(newCustomer);
 
-            return "Customer was registered";
+            return new ResponseEntity<>(HttpStatus.CREATED);
         }
 
         else{
-            return "email already registered";
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "email already registered");
         }
     }
 

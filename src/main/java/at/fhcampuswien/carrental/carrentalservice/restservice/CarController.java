@@ -6,7 +6,10 @@ import at.fhcampuswien.carrental.carrentalservice.entity.CarAttribute;
 import at.fhcampuswien.carrental.carrentalservice.repository.CarRepository;
 import at.fhcampuswien.carrental.carrentalservice.services.CurrencyConverter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,15 +40,14 @@ public class CarController {
     }
 
     @PostMapping("v1/Cars")
-    String saveCar(@RequestBody List<CarAttribute> newCar) {
+    ResponseEntity<Void> saveCar(@RequestBody List<CarAttribute> newCar) {
 
         if (!newCar.isEmpty()){
             repo.saveAll(newCar);
-            return "Cars were saved";
+            return new ResponseEntity<>(HttpStatus.CREATED);
         }
 
-
-        return "No value found";
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No value found");
     }
 
     private List<CarAttribute> convertCurrency(String currency, Iterable<CarAttribute> carAttributes){
