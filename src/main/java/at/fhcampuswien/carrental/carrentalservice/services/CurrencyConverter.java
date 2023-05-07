@@ -8,8 +8,10 @@ import java.io.IOException;
 
 public class  CurrencyConverter {
 
-    public static double convertCurrency(String currency, double value){
-
+    public static double convertCurrency(String currency, double value, String startCurrency){
+        if (startCurrency.isEmpty()){
+            startCurrency = "USD";
+        }
         int newvalue = (int)value;
 
         OkHttpClient client = new OkHttpClient();
@@ -20,7 +22,7 @@ public class  CurrencyConverter {
                         "    <ns1:convertCurrency xmlns:ns1='django.soap.currencyconverter'>\n" +
                         "<!-- optional -->\n" +
                         "<!-- This element may be left empty if xsi:nil='true' is set. -->\n" +
-                        "      <ns1:startcurr>USD</ns1:startcurr>\n" +
+                        "      <ns1:startcurr>"+startCurrency+"</ns1:startcurr>\n" +
                         "<!-- optional -->\n" +
                         "      <ns1:quantity>"+newvalue+"</ns1:quantity>\n" +
                         "<!-- optional -->\n" +
@@ -31,8 +33,8 @@ public class  CurrencyConverter {
                         "</s11:Envelope>"
         );
         Request request = new Request.Builder()
-//                .url("http://13.50.231.174:8501/SOAPservice/soap_service/")
-                .url("http://127.0.0.1:8501/SOAPservice/soap_service/")
+                .url("http://13.50.231.174:8501/SOAPservice/soap_service/")
+//                .url("http://127.0.0.1:8501/SOAPservice/soap_service/")
                 .method("POST", body)
                 .addHeader("Content-Type", "text/xml; charset=utf-8")
                 .addHeader("SOAPAction", "convertCurrency")

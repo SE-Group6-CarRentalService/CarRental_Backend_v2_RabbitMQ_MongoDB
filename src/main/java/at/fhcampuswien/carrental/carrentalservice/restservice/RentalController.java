@@ -31,11 +31,11 @@ public class RentalController {
 
     @GetMapping("v1/rentals")
     List<RentalAttribute> getRentals(@RequestParam(defaultValue = "USD") String currency) {
-        return convertCurrency(currency, repo.findAll());
+        return convertCurrency(currency, repo.findAll(), "");
 }
 
     @PostMapping("v1/rentals")
-    ResponseEntity<Void> createRental(@RequestBody RentalAttribute newRental) {
+    ResponseEntity<Void> createRental(@RequestBody RentalAttribute newRental, @RequestParam(defaultValue = "USD") String currency) {
         if(repo.findByCarId(newRental.getCarId()).isEmpty()) {
             RentalAttribute newRentalID = new RentalAttribute();
             newRental.setId(newRentalID.getId());
@@ -44,6 +44,7 @@ public class RentalController {
             if (rentedCarOpt.isPresent()){
                 CarAttribute rentedCar = rentedCarOpt.get();
                 rentedCar.setRentalId(String.valueOf(newRental.getId()));
+                rentedCar.setPriceusd(currencyConverter.convertCurrency("USD", rentedCar.getPriceusd(), currency));
                 carRepository.save(rentedCar);
             }
 
@@ -75,7 +76,7 @@ public class RentalController {
 
     @GetMapping("v1/rentals/{customerId}")
     List<RentalAttribute> getRentalDetails(@PathVariable int customerId, @RequestParam(defaultValue = "USD") String currency) {
-        return convertCurrency(currency, repo.findByCustomerId(customerId));
+        return convertCurrency(currency, repo.findByCustomerId(customerId), "");
     }
 
     @DeleteMapping("v1/rentals/{rentalId}")
@@ -99,12 +100,12 @@ public class RentalController {
         }
     }
 
-    private List<RentalAttribute> convertCurrency(String currency, Iterable<RentalAttribute> rentalAttributes){
+    private List<RentalAttribute> convertCurrency(String currency, Iterable<RentalAttribute> rentalAttributes, String startCurrency){
         DecimalFormat decfor = new DecimalFormat("0.00");
         List<RentalAttribute> rentalList = new ArrayList<>();
         double conversionRate = 1;
         if (!currency.equals("USD")){
-            conversionRate = currencyConverter.convertCurrency(currency, 1d);
+            conversionRate = currencyConverter.convertCurrency(currency, 1d, startCurrency);
         }
         System.out.println(conversionRate);
         for (RentalAttribute rentalAttribute : rentalAttributes) {
@@ -117,6 +118,8 @@ public class RentalController {
         }
         return rentalList;
     }
+
+
 
     private String getReturnDate(){
         Date date = Calendar.getInstance().getTime();

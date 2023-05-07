@@ -55,7 +55,7 @@ public class CarController {
         List<CarAttribute> carList = new ArrayList<>();
         double conversionRate = 1;
         if (!currency.equals("USD")){
-            conversionRate = currencyConverter.convertCurrency(currency, 1d);
+            conversionRate = currencyConverter.convertCurrency(currency, 1d, "");
         }
         System.out.println(conversionRate);
         for (CarAttribute carAttribute : carAttributes) {
