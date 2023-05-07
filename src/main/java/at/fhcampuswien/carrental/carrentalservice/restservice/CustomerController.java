@@ -2,6 +2,7 @@ package at.fhcampuswien.carrental.carrentalservice.restservice;
 
 
 import at.fhcampuswien.carrental.carrentalservice.entity.CustomerAttribute;
+import at.fhcampuswien.carrental.carrentalservice.entity.RentalAttribute;
 import at.fhcampuswien.carrental.carrentalservice.repository.CustomerRepository;
 import at.fhcampuswien.carrental.carrentalservice.security.JwtResponse;
 import at.fhcampuswien.carrental.carrentalservice.security.JwtTokenUtil;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.Optional;
 
 
 @RestController
@@ -48,29 +50,13 @@ public class CustomerController {
 
         if(passwordEncoder.matches(password, customer.getPassword())) {
             final String token = jwtTokenUtil.generateToken(email);
-            final JwtResponse response = new JwtResponse(token);
+            final JwtResponse response = new JwtResponse(token,  customer.getId());
             return new ResponseEntity<>(response, HttpStatus.OK);
         }
         else{
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
     }
-
-    //change to JWT/Tokens, therefore they invalidate themself after the given period
-//    @PostMapping("v1/Customers/logout")
-//    ResponseEntity<Void> deleteSession(@RequestBody Session session) {
-//        System.out.println("Session Logout " + session);
-//        System.out.println("Sessions " + Sessions);
-//        if (Sessions.contains(session))
-//        {
-//            Sessions.remove(session);
-//            return new ResponseEntity<>(HttpStatus.OK);
-//        }
-//        else
-//        {
-//            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "no session under that id");
-//        }
-//    }
 
     @PostMapping("v1/Customers/register")
     ResponseEntity<Void> registerCustomer(@RequestBody CustomerAttribute newCustomer) {
@@ -88,39 +74,36 @@ public class CustomerController {
         }
     }
 
-//TODO Change User attributes later on
+    @PutMapping("v1/Customers/{customerId}")
+    ResponseEntity<Void> editCustomer(@PathVariable int customerId,@RequestBody CustomerAttribute editedCustomer){
+        Optional<CustomerAttribute> customerOpt = repo.findById(customerId);
+        if (customerOpt.isPresent()){
+            CustomerAttribute customer = customerOpt.get();
+            customer.setName(editedCustomer.getName());
+            customer.setEmail(editedCustomer.getEmail());
+            customer.setAddress(editedCustomer.getAddress());
+            customer.setPassportNumber(editedCustomer.getPassportNumber());
+            customer.setBirthdate(editedCustomer.getBirthdate());
+            repo.save(customer);
+        }
+        return new ResponseEntity<>(HttpStatus.CREATED);
+    }
 
-//    @PutMapping("v1/Customers/{sessionID}")
-//    String editCustomer(@PathVariable int sessionID,@RequestBody Customer editedCustomer){
-//
-//        if (null==Sessions.stream().filter(session -> sessionID==session.getSessionID()).findAny().orElse(null))
-//        {
-//            //TODO:Customer wird in der Datenbank erstezt/Attribute verändert
-//            return "User info has been changed";
-//        }
-//        else
-//        {
-//            return "no session under that id";
-//        }
-//
-//    }
+    @GetMapping("v1/Customers/{customerId}")
+    ResponseEntity<CustomerAttribute> getCustomerDetails(@PathVariable int customerId){
+        System.out.println("Requested Customer " + customerId);
 
-//    @GetMapping("v1/Customers/{sessionID}")
-//    Customer getCustomerDetails(@PathVariable Integer sessionID){
-//
-//        Session currentSession =Sessions.stream().filter(session -> sessionID==session.getSessionID()).findAny().orElse(null);
-//
-//        if (Sessions.contains(currentSession))
-//        {
-//            //TODO: Customer von der Datenbank holen
-//            return Customers.stream().filter(customer -> currentSession.getAccountMail() == customer.getEmail()).findAny().orElse(null);
-//        }
-//        else
-//        {
-//            return null;
-//        }
-//
-//    }
+        Optional<CustomerAttribute> customerOpt = repo.findById(Integer.valueOf(customerId));
+
+        if(customerOpt.isPresent()) {
+            CustomerAttribute customer = customerOpt.get();
+            customer.setPassword("");
+            return new ResponseEntity<>(customer, HttpStatus.OK);
+        }
+        else{
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "customer not found");
+        }
+    }
 
 //    @DeleteMapping("v1/Customers/{sessionID}")
 //    String deleteCustomer(@PathVariable int sessionID,@RequestBody Customer editedCustomer){
