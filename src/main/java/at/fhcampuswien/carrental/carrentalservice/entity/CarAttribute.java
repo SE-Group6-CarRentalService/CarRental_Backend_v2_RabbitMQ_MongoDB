@@ -1,13 +1,16 @@
 package at.fhcampuswien.carrental.carrentalservice.entity;
 
-import jakarta.persistence.*;
+//import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-@Entity
-@Table(name = "carlist_tbl")
+//@Entity
+//@Table(name = "carlist_tbl")
+@Document(collection = "carlist_tbl")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -15,47 +18,47 @@ import lombok.Setter;
 public class CarAttribute {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "car_id", nullable = false)
+    //@GeneratedValue(strategy = GenerationType.IDENTITY)
+    //@Column(name = "car_id", nullable = false)
     private int id;
 
-    @Column(name = "model_name")
+    //@Column(name = "model_name")
     private String modelName;
 
-    @Column(name = "cylinder")
+    //@Column(name = "cylinder")
     private int cylinder;
 
-    @Column(name = "price_usd")
+    //@Column(name = "price_usd")
     private double priceusd;
 
-    @Column(name = "horsepower")
+    //@Column(name = "horsepower")
     private int horsepower;
 
-    @Column(name = "weight_in_lbs")
+    //@Column(name = "weight_in_lbs")
     private int weightInlbs;
 
-    @Column(name = "acceleration")
+    //@Column(name = "acceleration")
     private int acceleration;
 
-    @Column(name = "year")
+    //@Column(name = "year")
     private String year;
 
-    @Column(name = "origin")
+    //@Column(name = "origin")
     private String origin;
 
-    @Column(name = "location")
+    //@Column(name = "location")
     private String location;
 
-    @Column(name = "fuel")
+    //@Column(name = "fuel")
     private String fuel;
 
-    @Column(name = "mileage_km")
+    //@Column(name = "mileage_km")
     private int mileageKm;
 
-    @Column(name = "automatic")
+    //@Column(name = "automatic")
     private boolean automatic;
 
-    @Column(name = "rental_id")
+    //@Column(name = "rental_id")
     private String rentalId;
 
 }
