@@ -13,6 +13,6 @@ import java.util.Optional;
 @Repository
 public interface CustomerRepository extends CrudRepository<CustomerAttribute, Integer> {
 
-    List<CustomerAttribute> findByEmail(String email);
+    CustomerAttribute findByEmail(String email);
 
 }
