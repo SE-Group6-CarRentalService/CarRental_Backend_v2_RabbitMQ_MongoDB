@@ -22,13 +22,6 @@ public class CarRentalServiceApplication {
 	}
 
 	@Bean
-	public void test() {
-
-		System.out.println("Antwort"+CurrencyConverter.convertCurrency("JPY",60));
-
-	}
-
-	@Bean
 	public WebMvcConfigurer corsConfigurer() {
 		return new WebMvcConfigurer() {
 			@Override

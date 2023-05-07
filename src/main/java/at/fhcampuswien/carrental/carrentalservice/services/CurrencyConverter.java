@@ -32,6 +32,7 @@ public class  CurrencyConverter {
         );
         Request request = new Request.Builder()
                 .url("http://13.50.231.174:8501/SOAPservice/soap_service/")
+//                .url("http://127.0.0.1:8501/SOAPservice/soap_service/")
                 .method("POST", body)
                 .addHeader("Content-Type", "text/xml; charset=utf-8")
                 .addHeader("SOAPAction", "convertCurrency")

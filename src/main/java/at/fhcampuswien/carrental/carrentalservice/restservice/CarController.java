@@ -52,8 +52,10 @@ public class CarController {
 
     private List<CarAttribute> convertCurrency(String currency, Iterable<CarAttribute> carAttributes){
         List<CarAttribute> carList = new ArrayList<>();
+        double conversionRate = currencyConverter.convertCurrency(currency, 1d);
+        System.out.println(conversionRate);
         for (CarAttribute carAttribute : carAttributes) {
-            carAttribute.setPriceusd(currencyConverter.convertCurrency(currency, carAttribute.getPriceusd()));
+            carAttribute.setPriceusd (carAttribute.getPriceusd() * conversionRate);
             carList.add(carAttribute);
         }
 
