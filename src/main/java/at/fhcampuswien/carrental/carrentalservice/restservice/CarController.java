@@ -53,7 +53,7 @@ public class CarController {
     private List<CarAttribute> convertCurrency(String currency, Iterable<CarAttribute> carAttributes){
         List<CarAttribute> carList = new ArrayList<>();
         for (CarAttribute carAttribute : carAttributes) {
-            //carAttribute.setPriceusd(currencyConverter.convertCurrency(currency, carAttribute.getPriceusd()));
+            carAttribute.setPriceusd(currencyConverter.convertCurrency(currency, carAttribute.getPriceusd()));
             carList.add(carAttribute);
         }
 

@@ -1,7 +1,6 @@
 package at.fhcampuswien.carrental.carrentalservice.services;
 
 import com.squareup.okhttp.*;
-import org.springframework.web.client.RestTemplate;
 
 
 import java.io.IOException;
@@ -32,7 +31,7 @@ public class  CurrencyConverter {
                         "</s11:Envelope>"
         );
         Request request = new Request.Builder()
-                .url("http://127.0.0.1:8000/SOAPservice/soap_service/")
+                .url("http://13.50.231.174:8501/SOAPservice/soap_service/")
                 .method("POST", body)
                 .addHeader("Content-Type", "text/xml; charset=utf-8")
                 .addHeader("SOAPAction", "convertCurrency")
@@ -43,7 +42,7 @@ public class  CurrencyConverter {
         try {
             response = client.newCall(request).execute();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            return value;
         }
 
         String stringResponse = null;
@@ -51,7 +50,7 @@ public class  CurrencyConverter {
         try {
             stringResponse = response.body().string();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            return value;
         }
 
         stringResponse = stringResponse.substring(stringResponse.indexOf("<tns:convertCurrencyResult>"),stringResponse.indexOf("</tns:convertCurrencyResult>")).replaceFirst("<tns:convertCurrencyResult>", "");

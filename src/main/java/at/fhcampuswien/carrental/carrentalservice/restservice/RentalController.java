@@ -101,7 +101,7 @@ public class RentalController {
     private List<RentalAttribute> convertCurrency(String currency, Iterable<RentalAttribute> rentalAttributes){
         List<RentalAttribute> rentalList = new ArrayList<>();
         for (RentalAttribute rentalAttribute : rentalAttributes) {
-            //rentalAttribute.setTotalCost(currencyConverter.convertCurrency(currency, rentalAttribute.getTotalCost()));
+            rentalAttribute.setTotalCost(currencyConverter.convertCurrency(currency, rentalAttribute.getTotalCost()));
             rentalList.add(rentalAttribute);
         }
 
