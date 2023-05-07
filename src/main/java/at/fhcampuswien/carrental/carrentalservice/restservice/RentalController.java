@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.text.DateFormat;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -99,11 +100,15 @@ public class RentalController {
     }
 
     private List<RentalAttribute> convertCurrency(String currency, Iterable<RentalAttribute> rentalAttributes){
+        DecimalFormat decfor = new DecimalFormat("0.00");
         List<RentalAttribute> rentalList = new ArrayList<>();
-        double conversionRate = currencyConverter.convertCurrency(currency, 1d);
+        double conversionRate = 1;
+        if (!currency.equals("USD")){
+            conversionRate = currencyConverter.convertCurrency(currency, 1d);
+        }
         System.out.println(conversionRate);
         for (RentalAttribute rentalAttribute : rentalAttributes) {
-            rentalAttribute.setTotalCost(rentalAttribute.getTotalCost() * conversionRate);
+            rentalAttribute.setTotalCost(roundDouble(rentalAttribute.getTotalCost() * conversionRate));
             rentalList.add(rentalAttribute);
         }
 
@@ -117,6 +122,11 @@ public class RentalController {
         Date date = Calendar.getInstance().getTime();
         DateFormat dateFormat = new SimpleDateFormat("EEE MMM dd yyyy");
         return dateFormat.format(date);
+    }
+
+    private double roundDouble(double price){
+        String priceStr = String.format("%.2f",price).replace(",",".");
+        return Double.parseDouble(priceStr);
     }
 
 

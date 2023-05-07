@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -52,10 +53,13 @@ public class CarController {
 
     private List<CarAttribute> convertCurrency(String currency, Iterable<CarAttribute> carAttributes){
         List<CarAttribute> carList = new ArrayList<>();
-        double conversionRate = currencyConverter.convertCurrency(currency, 1d);
+        double conversionRate = 1;
+        if (!currency.equals("USD")){
+            conversionRate = currencyConverter.convertCurrency(currency, 1d);
+        }
         System.out.println(conversionRate);
         for (CarAttribute carAttribute : carAttributes) {
-            carAttribute.setPriceusd (carAttribute.getPriceusd() * conversionRate);
+            carAttribute.setPriceusd(roundDouble(carAttribute.getPriceusd() * conversionRate));
             carList.add(carAttribute);
         }
 
@@ -63,6 +67,11 @@ public class CarController {
             return null;
         }
         return carList;
+    }
+
+    private double roundDouble(double price){
+        String priceStr = String.format("%.2f",price).replace(",",".");
+        return Double.parseDouble(priceStr);
     }
 
 }
