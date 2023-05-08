@@ -19,6 +19,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 
@@ -28,8 +29,8 @@ public class CustomerController {
 
     private CustomerAttribute customerAttribute;
 
-    @Autowired
-    private CustomerRepository repo;
+    //@Autowired
+    //private CustomerRepository repo;
 
     @Autowired
     private JwtTokenUtil jwtTokenUtil;
@@ -44,6 +45,7 @@ public class CustomerController {
     private DirectExchange exchange;
 
 
+    //TESTED working
     @Scheduled(fixedDelay = 1000, initialDelay = 500)
     @GetMapping("v1/Customers")
     List<CustomerAttribute> getCustomers() throws Exception {
@@ -62,64 +64,96 @@ public class CustomerController {
 
     }
 
+    //TESTED working
     @Scheduled(fixedDelay = 1000, initialDelay = 500)
     @PostMapping("v1/Customers/login")
     ResponseEntity<JwtResponse> getCustomer(@RequestParam String email, @RequestParam String password) throws IOException, ClassNotFoundException {
 
+        System.out.println(" [x] Requesting getCustomer() -> LOGIN A CUSTOMER");
+
         CustomerAttribute customer = new CustomerAttribute();
+        //TODO change getCustomer to LoginCustomer in microservice and in comment below
         customer.setFunctionCallName("getCustomer");
         customer.setEmail(email);
-        customer.setPasswordHash(password);
+        customer.setPassword(password);
 
         String serializedCustomerObject = customerAttribute.serializeToString(customer);
 
+        String responseAMQP;
+        CustomerAttribute customerFoundInDB;
+        String passwordFromDBforRequestedUser;
         try {
-            String serializedCustomerInfo = (String) template.convertSendAndReceive(exchange.getName(), "rpc", serializedCustomerObject);
-            customer = (CustomerAttribute) customerAttribute.deserializeFromString(serializedCustomerInfo);
+            responseAMQP = (String) template.convertSendAndReceive(exchange.getName(), "rpc", serializedCustomerObject);
+            customerFoundInDB = (CustomerAttribute) customerAttribute.deserializeFromString(responseAMQP);
 
-        //TODO check if exception is triggered if no user found
+            //TODO check if exception is triggered if no user found
 
-        }catch (Exception e){
+        } catch (Exception e) {
             System.out.println("No user with this email found " + email);
+            System.out.println("Exception: " + e);
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No user with this email found");
         }
 
-        if(passwordEncoder.matches(password, customer.getPassword())) {
-            final String token = jwtTokenUtil.generateToken(email);
-            final JwtResponse response = new JwtResponse(token,  customer.getId());
-            return new ResponseEntity<>(response, HttpStatus.OK);
-        }
-        else{
+
+        System.out.println("Email equals Email? " +responseAMQP);
+        System.out.println("CustomerFoundInDB? " +customerFoundInDB.getEmail());
+        if (Objects.equals(customerFoundInDB.getEmail(), email)) {
+            System.out.println("PW from DB? " +customerFoundInDB.getPassword());
+            System.out.println("PW from PW? " +password);
+            System.out.println("Email from DB? " +customerFoundInDB.getEmail());
+
+            if (passwordEncoder.matches(password, customerFoundInDB.getPassword())) {
+                System.out.println("1");
+                final String token = jwtTokenUtil.generateToken(email);
+                System.out.println("2");
+                final JwtResponse response = new JwtResponse(token, customerFoundInDB.getId());
+                System.out.println("3");
+                return new ResponseEntity<>(response, HttpStatus.OK);
+            } else {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+            }
+        } else {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
+
+
     }
 
+    //TESTED working -> see TODO in function below
     @Scheduled(fixedDelay = 1000, initialDelay = 500)
     @PostMapping("v1/Customers/register")
     ResponseEntity<Void> registerCustomer(@RequestBody CustomerAttribute newCustomer) throws IOException {
 
-        CustomerAttribute customer = new CustomerAttribute();
-        customer.setFunctionCallName("getCustomer");
-        customer.setEmail(newCustomer.getEmail());
-        customer.setPasswordHash(newCustomer.getPassword());
+        System.out.println(" [x] Requesting registerCustomer() -> REGISTER A CUSTOMER");
 
-        String serializedCustomerObject = customerAttribute.serializeToString(customer);
+        CustomerAttribute newCustomerId = new CustomerAttribute();
+        newCustomer.setFunctionCallName("getCustomer");
+        //newCustomer.setId(newCustomerId.getId());
+        //TODO check why when registering with passportNumber filled: Error: response status is 400. Takes the passportnumber as JWT token why -> thats why passportNumber set to null
+        newCustomer.setPassportNumber(null);
 
-        CustomerAttribute customerFromDB;
+        //newCustomer.setPassword(passwordEncoder.encode(newCustomer.getPassword()));
 
+        System.out.println("Encoded Password 1" + newCustomer.getPassword());
+
+        String serializedCustomerObject = customerAttribute.serializeToString(newCustomer);
+
+        System.out.println("Encoded Password 2" + newCustomer.getPassword());
+        List<CustomerAttribute> customerFromDB;
+        String deSerializedStringResponseFromGetCustomer = "";
+
+        String serializedCustomerInfo;
         try {
-            String serializedCustomerInfo = (String) template.convertSendAndReceive(exchange.getName(), "rpc", serializedCustomerObject);
-            customerFromDB = (CustomerAttribute) customerAttribute.deserializeFromString(serializedCustomerInfo);
+            serializedCustomerInfo = (String) template.convertSendAndReceive(exchange.getName(), "rpc", serializedCustomerObject);
+            //deSerializedStringResponseFromGetCustomer = (String) customerAttribute.deserializeFromString(serializedCustomerInfo);
 
-            //TODO check if exception is triggered if no user found
 
-        }catch (Exception e){
+        } catch (Exception e) {
             System.out.println("No user found.");
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No user with this email found");
         }
 
-        //TODO check if return object is null
-        if(customerFromDB.getEmail()==null) {
+        if (Objects.equals(serializedCustomerInfo, "noUserFound")) {
 
             newCustomer.setFunctionCallName("registerCustomer");
 
@@ -136,16 +170,17 @@ public class CustomerController {
             return new ResponseEntity<>(HttpStatus.CREATED);
         }
 
-        //TODO check if exceptionm is throwen when email already registered;
-
-        else{
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "email already registered");
+        else {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, " email already registered");
         }
     }
 
+    //TESTED working
     @Scheduled(fixedDelay = 1000, initialDelay = 500)
     @PutMapping("v1/Customers/{customerId}")
     ResponseEntity<Void> editCustomer(@PathVariable int customerId,@RequestBody CustomerAttribute editedCustomer) throws IOException, ClassNotFoundException {
+
+        System.out.println(" [x] Requesting editCustomer() -> EDIT A CUSTOMER");
 
         CustomerAttribute customer = new CustomerAttribute();
         customer.setId(customerId);
@@ -185,12 +220,15 @@ public class CustomerController {
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
-    //TODO Change to RabbitMQ RPC not jet changed
+    //TESTED working
     @Scheduled(fixedDelay = 1000, initialDelay = 500)
     @GetMapping("v1/Customers/{customerId}")
     ResponseEntity<CustomerAttribute> getCustomerDetails(@PathVariable int customerId) throws IOException, ClassNotFoundException {
+
+        System.out.println(" [x] Requesting getCustomerDetails() -> GET CUSTOMER DETAILS");
+
         System.out.println("Requested Customer " + customerId);
-        CustomerAttribute customer = null;
+        CustomerAttribute customer = new CustomerAttribute();
         customer.setId(customerId);
         customer.setFunctionCallName("customerFindById");
 

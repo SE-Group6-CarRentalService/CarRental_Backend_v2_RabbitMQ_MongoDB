@@ -24,6 +24,7 @@ public class CarRentalServiceApplication {
 		SpringApplication.run(CarRentalServiceApplication.class, args);
 	}
 
+	//Uncomment for Security init commented for testing purpose
 	@Bean
 	public WebMvcConfigurer corsConfigurer() {
 		return new WebMvcConfigurer() {
@@ -33,5 +34,7 @@ public class CarRentalServiceApplication {
 			}
 		};
 	}
+
+
 
 }

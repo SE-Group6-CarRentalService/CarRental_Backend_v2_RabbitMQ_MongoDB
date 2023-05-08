@@ -36,7 +36,8 @@ public class CustomerAttribute  implements Serializable {
     @Id
     //@GeneratedValue(strategy = GenerationType.IDENTITY)
     //@Column(name = "customer_id", nullable = false)
-    private int id;
+    //int changed to Integer because Integer is nullable
+    private Integer id;
 
     //@Column(name = "passport_number")
     private String passportNumber;

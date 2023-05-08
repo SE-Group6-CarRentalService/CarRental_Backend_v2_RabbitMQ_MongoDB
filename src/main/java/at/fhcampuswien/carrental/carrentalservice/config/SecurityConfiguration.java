@@ -15,6 +15,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
+//Uncomment for Security init commented for testing purpose
 @EnableWebSecurity
 public class SecurityConfiguration {
 
@@ -29,6 +30,7 @@ public class SecurityConfiguration {
         return new BCryptPasswordEncoder();
     }
 
+    //Uncomment for Security init commented for testing purpose
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
         httpSecurity.cors().and().csrf().disable()
@@ -45,5 +47,9 @@ public class SecurityConfiguration {
         httpSecurity.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
         return httpSecurity.build();
     }
+
+
+
+
 
 }

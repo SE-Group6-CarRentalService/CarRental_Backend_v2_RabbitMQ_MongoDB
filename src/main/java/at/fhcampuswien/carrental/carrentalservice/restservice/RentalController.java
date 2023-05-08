@@ -37,8 +37,9 @@ public class RentalController {
     @PostMapping("v1/rentals")
     ResponseEntity<Void> createRental(@RequestBody RentalAttribute newRental, @RequestParam(defaultValue = "USD") String currency) {
         if(repo.findByCarId(newRental.getCarId()).isEmpty()) {
-            RentalAttribute newRentalID = new RentalAttribute();
-            newRental.setId(newRentalID.getId());
+            List<RentalAttribute> allRentals = (List<RentalAttribute>) repo.findAll();
+            RentalAttribute lastRentalInDb = allRentals.get(allRentals.size()-1);
+            newRental.setId(lastRentalInDb.getId()+1);
             repo.save(newRental);
             Optional<CarAttribute> rentedCarOpt = carRepository.findById(newRental.getCarId());
             if (rentedCarOpt.isPresent()){
