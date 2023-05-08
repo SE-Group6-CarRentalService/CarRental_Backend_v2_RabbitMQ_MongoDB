@@ -119,7 +119,6 @@ public class CustomerController {
 
     }
 
-    //TESTED working -> see TODO in function below
     @Scheduled(fixedDelay = 1000, initialDelay = 500)
     @PostMapping("v1/Customers/register")
     ResponseEntity<Void> registerCustomer(@RequestBody CustomerAttribute newCustomer) throws IOException {
@@ -128,11 +127,6 @@ public class CustomerController {
 
         CustomerAttribute newCustomerId = new CustomerAttribute();
         newCustomer.setFunctionCallName("getCustomer");
-        //newCustomer.setId(newCustomerId.getId());
-        //TODO check why when registering with passportNumber filled: Error: response status is 400. Takes the passportnumber as JWT token why -> thats why passportNumber set to null
-        newCustomer.setPassportNumber(null);
-
-        //newCustomer.setPassword(passwordEncoder.encode(newCustomer.getPassword()));
 
         System.out.println("Encoded Password 1" + newCustomer.getPassword());
 

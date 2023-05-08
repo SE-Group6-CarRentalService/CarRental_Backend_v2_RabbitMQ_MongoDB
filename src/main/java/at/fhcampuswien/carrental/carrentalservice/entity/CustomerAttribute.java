@@ -1,7 +1,6 @@
 package at.fhcampuswien.carrental.carrentalservice.entity;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-//import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,7 +12,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.io.*;
 import java.util.Base64;
 
-//@Entity
+
 @Document(collection = "customerlist_tbl")
 @Getter
 @Setter
@@ -34,30 +33,20 @@ public class CustomerAttribute  implements Serializable {
     private int session;
 
     @Id
-    //@GeneratedValue(strategy = GenerationType.IDENTITY)
-    //@Column(name = "customer_id", nullable = false)
-    //int changed to Integer because Integer is nullable
     private Integer id;
 
-    //@Column(name = "passport_number")
     private String passportNumber;
 
-    //@Column(name = "name")
     private String name;
 
-    //@Column(name = "birthdate")
     private String birthdate;
 
-    //@Column(name = "address")
     private String address;
 
-    //@Column(name = "payment_method")
     private String paymentMethod;
 
-    //@Column(name = "email")
     private String email;
 
-    //@Column(name = "password")
     private String password;
 
     //Deserialize object to a Base64 string
